@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Bot, Loader, Send, Mic, User, HelpCircle, Save, Lightbulb, LineChart } from "lucide-react";
+import { Bot, Loader, Send, Mic, User, HelpCircle, Save, Lightbulb, LineChart, Volume2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,12 +10,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { getFinancialAdvice } from "@/ai/flows/chatbot-financial-advice";
 import { getSavingsTips } from "@/ai/flows/chatbot-suggests-savings-tips";
 import { chatbotSuggestsBudgetPlan } from "@/ai/flows/chatbot-suggests-budget-plan";
+import { textToSpeech } from "@/ai/flows/text-to-speech";
 import { cn } from "@/lib/utils";
 
 type Message = {
   id: number;
   text: string | string[];
   sender: "user" | "bot";
+  audioUrl?: string;
 };
 
 type ChatbotProps = {
@@ -58,6 +60,8 @@ export function Chatbot({ role }: ChatbotProps) {
   const [input, setInput] = useState("");
   const [activeTab, setActiveTab] = useState("general");
   const [isLoading, setIsLoading] = useState(false);
+  const [audioPlaying, setAudioPlaying] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -89,22 +93,35 @@ export function Chatbot({ role }: ChatbotProps) {
     try {
       let botResponse: Message;
       let responseData: any;
+      let responseText: string | string[];
 
       if (text.toLowerCase().includes("budget plan")) {
         responseData = await chatbotSuggestsBudgetPlan({ monthlyIncome: 5000, monthlyExpenses: 3500 });
-        botResponse = { id: Date.now() + 1, text: responseData.budgetPlan, sender: "bot" };
+        responseText = responseData.budgetPlan;
       } else if (text.toLowerCase().includes("savings tips")) {
         responseData = await getSavingsTips({ userInput: text });
-        botResponse = { id: Date.now() + 1, text: responseData.savingsTips, sender: "bot" };
+        responseText = responseData.savingsTips;
       } else {
         responseData = await getFinancialAdvice({ userInput: text });
-        botResponse = { id: Date.now() + 1, text: responseData.advice, sender: "bot" };
+        responseText = responseData.advice;
       }
+
+      botResponse = { id: Date.now() + 1, text: responseText, sender: "bot" };
       
       setMessages((prev) => ({
         ...prev,
         [activeTab]: [...prev[activeTab], botResponse],
       }));
+
+      // Generate audio
+      const audioText = Array.isArray(responseText) ? responseText.join(' ') : responseText;
+      const audioData = await textToSpeech(audioText);
+      
+      setMessages((prev) => ({
+        ...prev,
+        [activeTab]: prev[activeTab].map(msg => msg.id === botResponse.id ? { ...msg, audioUrl: audioData.media } : msg)
+      }));
+
     } catch (error) {
       console.error("Error fetching AI response:", error);
       const errorResponse: Message = {
@@ -120,6 +137,20 @@ export function Chatbot({ role }: ChatbotProps) {
       setIsLoading(false);
     }
   };
+
+  const handlePlayAudio = (message: Message) => {
+    if (audioRef.current && audioPlaying === message.id) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        setAudioPlaying(null);
+    } else if (message.audioUrl) {
+        if(audioRef.current) {
+            audioRef.current.src = message.audioUrl;
+            audioRef.current.play();
+            setAudioPlaying(message.id);
+        }
+    }
+  }
 
   const quickSuggestions = [
     { text: "Create a Budget Plan", icon: HelpCircle },
@@ -155,13 +186,23 @@ export function Chatbot({ role }: ChatbotProps) {
                 {messages[activeTab]?.map((message) => (
                   <div key={message.id} className={cn("flex items-start gap-3", message.sender === 'user' ? 'justify-end' : '')}>
                      {message.sender === 'bot' && <AvatarForBot />}
-                    <div className={cn("max-w-xs md:max-w-md lg:max-w-lg rounded-lg px-4 py-2", message.sender === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted')}>
+                    <div className={cn("max-w-xs md:max-w-md lg:max-w-lg rounded-lg px-4 py-2 relative group", message.sender === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted')}>
                        {Array.isArray(message.text) ? (
                             <ul className="list-disc space-y-2 pl-5">
                                 {message.text.map((item, index) => <li key={index}>{item}</li>)}
                             </ul>
                         ) : (
                             <p className="text-sm">{message.text}</p>
+                        )}
+                        {message.sender === 'bot' && message.audioUrl && (
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                className="absolute -bottom-4 -right-4 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => handlePlayAudio(message)}
+                            >
+                                {audioPlaying === message.id ? <Loader className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
+                            </Button>
                         )}
                     </div>
                     {message.sender === 'user' && <AvatarForUser />}
@@ -209,6 +250,7 @@ export function Chatbot({ role }: ChatbotProps) {
           </div>
         </Tabs>
       </CardContent>
+       <audio ref={audioRef} onEnded={() => setAudioPlaying(null)} className="hidden" />
     </Card>
   );
 }
@@ -225,4 +267,3 @@ const AvatarForUser = () => (
         <User className="h-5 w-5" />
     </div>
 )
-
