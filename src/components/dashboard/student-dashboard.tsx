@@ -83,7 +83,7 @@ export function StudentUserDashboard() {
   const handleQuickActionClick = (label: string) => {
     toast({
       title: 'Expense Logged',
-      description: `${label} expense has been logged.`,
+      description: `Your expense for "${label}" has been logged.`,
     });
   };
 
