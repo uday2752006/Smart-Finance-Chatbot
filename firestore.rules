@@ -1,0 +1,101 @@
+/**
+ * @fileoverview Firestore Security Rules for the FinWise Dashboard application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a user-ownership model for user profiles and uses a separate collection to grant admin privileges.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profile information, with each document ID matching the user's UID. The `role` field determines basic user privileges.
+ * - /roles_admin/{userId}: The existence of a document here grants admin privileges to the corresponding user.
+ *
+ * Key Security Decisions:
+ * - User listing is allowed only to admins for the /users collection.
+ * - The /roles_admin collection uses a presence check to grant admin status, avoiding data duplication and simplifying admin role management.
+ * - Data validation is minimized in this prototyping phase, focusing on owner-only access.
+ *
+ * Denormalization for Authorization:
+ * The user's role is denormalized directly into the `/users/{userId}` document. This avoids extra reads during authorization checks and simplifies the rules.
+ * The existence of a document in `/roles_admin/{userId}` is used as a flag for admin privileges, avoiding the need to store admin roles in user documents.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Enforces user-ownership for user profiles and grants admin access.
+     * @path /users/{userId}
+     * @allow (create) User with UID 'user_abc' can create their own profile at /users/user_abc.
+     * @allow (get, update, delete) User with UID 'user_abc' can read, update, and delete their own profile at /users/user_abc.
+     * @allow (list) Admin users can list all user profiles.
+     * @deny (create) User with UID 'user_abc' cannot create a profile at /users/user_xyz.
+     * @deny (update, delete) User with UID 'user_abc' cannot update or delete the profile of user 'user_xyz'.
+     * @principle Enforces document ownership for writes and allows owner-only access to user profiles, with an exception for admin users to list profiles.
+     */
+    match /users/{userId} {
+      // Helper function to check if the user is the owner of the document.
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      // Helper function to check if the user is an existing owner of the document (i.e. the document exists and the user is the owner).
+      function isExistingOwner(userId) {
+        return isOwner(userId) && exists(/databases/$(database)/documents/users/$(userId));
+      }
+
+       // Helper function to check if the user is an admin.
+      function isAdmin() {
+        return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+      }
+
+      // Allow a user to create their own profile.
+      allow create: if isOwner(userId);
+
+      // Allow a user to get their own profile.
+      allow get: if isOwner(userId) || isAdmin();
+
+      // Allow a user to update their own profile.  Enforce immutability of the userId.
+      allow update: if isOwner(userId) && isExistingOwner(userId);
+
+      // Allow a user to delete their own profile.
+      allow delete: if isOwner(userId) && isExistingOwner(userId);
+
+      // Allow admins to list all users.
+      allow list: if isAdmin();
+    }
+
+    /**
+     * @description Controls admin privileges based on the existence of a document in this collection.
+     * @path /roles_admin/{userId}
+     * @allow (create) A server-side process can create an admin role assignment at /roles_admin/admin_abc.
+     * @allow (get) Any authenticated user can check if they are an admin by reading /roles_admin/{userId}.
+     * @deny (create, update, or delete) Regular users cannot create, update, or delete admin role assignments.
+     * @deny (list) Regular users cannot list all admin role assignments.
+     * @principle Grants admin privileges based on the existence of a document.  Regular users cannot modify admin assignments.
+     */
+    match /roles_admin/{userId} {
+       // Helper function to check if the user is an admin.
+      function isAdmin() {
+        return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+      }
+
+      // Only allow the creation of admin roles by a server-side process (e.g., a Cloud Function with admin privileges).
+      // In a real application, this would be managed through a secure backend.
+      allow create: if false; // TODO: Replace with a secure backend process.
+
+      // Allow anyone to check if they are an admin.  This is safe because only a trusted backend can create the document.
+      allow get: if request.auth.uid == userId;
+
+      // No updates or deletes allowed via client.  Only a trusted backend can modify this.
+      allow update, delete: if false;
+
+      // Prevent listing of admin roles.
+      allow list: if false;
+    }
+  }
+
+  // Define helper functions outside the match block for global availability.
+  // Checks if the user is signed in.
+  function isSignedIn() {
+    return request.auth != null;
+  }
+}
