@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -18,6 +19,7 @@ import {
   Utensils,
   TramFront,
   GraduationCap,
+  RefreshCcw,
 } from 'lucide-react';
 import { ExpensesVsAllowanceChart, FeePaymentStatusChart } from './charts';
 import { useToast } from '@/hooks/use-toast';
@@ -25,6 +27,7 @@ import { SavingsGoals } from './savings-goals';
 
 export function StudentUserDashboard() {
   const { toast } = useToast();
+  const [feePaidPercentage, setFeePaidPercentage] = useState(75);
 
   const summaryData = [
     {
@@ -88,6 +91,17 @@ export function StudentUserDashboard() {
     });
   };
 
+  const handleUpdateFeeStatus = () => {
+    setFeePaidPercentage(prev => {
+      const nextValue = prev + 25;
+      return nextValue > 100 ? 25 : nextValue;
+    });
+     toast({
+      title: 'Fee Status Updated',
+      description: `Fee payment status is now ${feePaidPercentage === 100 ? 25 : feePaidPercentage + 25}%.`,
+    });
+  };
+
   return (
     <div className="flex flex-col gap-8">
       <div className="grid gap-6 md:grid-cols-3">
@@ -132,11 +146,15 @@ export function StudentUserDashboard() {
           </CardContent>
         </Card>
         <Card className="lg:col-span-2">
-          <CardHeader>
+          <CardHeader className='flex-row items-center justify-between'>
             <CardTitle>Fee Payment Status</CardTitle>
+            <Button variant="ghost" size="icon" onClick={handleUpdateFeeStatus}>
+              <RefreshCcw className="h-4 w-4" />
+              <span className="sr-only">Update Fee Status</span>
+            </Button>
           </CardHeader>
           <CardContent>
-            <FeePaymentStatusChart />
+            <FeePaymentStatusChart feePaidPercentage={feePaidPercentage} />
           </CardContent>
         </Card>
       </div>

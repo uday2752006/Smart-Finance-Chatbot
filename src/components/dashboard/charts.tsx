@@ -151,8 +151,8 @@ export function ExpensesVsAllowanceChart() {
   );
 }
 
-export function FeePaymentStatusChart() {
-    const data = [{ name: 'Fees Paid', value: 75, fill: '#82ca9d' }]; // 75% paid
+export function FeePaymentStatusChart({ feePaidPercentage }: { feePaidPercentage: number }) {
+    const data = [{ name: 'Fees Paid', value: feePaidPercentage, fill: '#82ca9d' }];
     return (
         <ResponsiveContainer width="100%" height={300}>
             <RadialBarChart 
@@ -174,7 +174,7 @@ export function FeePaymentStatusChart() {
                     dominantBaseline="middle" 
                     className="fill-foreground text-4xl font-bold"
                 >
-                    75%
+                    {`${feePaidPercentage}%`}
                 </text>
                  <text 
                     x="50%" 
