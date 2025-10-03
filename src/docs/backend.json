@@ -1,0 +1,82 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the FinWise Dashboard application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "The user's full name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "role": {
+          "type": "string",
+          "description": "The user's role (e.g., Normal, Student).",
+          "enum": [
+            "normal",
+            "student"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "fullName",
+        "email",
+        "role"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information. Includes 'role' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "role_admin",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Indicates admin privileges. Its existence grants admin access.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the admin user."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This Firestore structure is designed to securely manage user data and application features for the FinWise Dashboard. It emphasizes authorization independence and simplifies security rules through denormalization and structural segregation. User roles are stored directly within the user document, eliminating the need for custom claims and enabling database-driven access control (DBAC). The structure facilitates secure list operations by ensuring homogeneous security postures within collections.\n\nKey features of the structure:\n\n1.  **/users/{userId}**: Stores user profile information, including the user's role (Normal or Student). This is the primary source of truth for the user's role, which is crucial for role-based access control.\n2.  **/roles_admin/{userId}**: Indicates admin privileges. Its existence grants admin access.\n\n**Authorization Independence and Denormalization**: User roles are directly embedded in the `/users/{userId}` document, removing any dependencies on external data lookups for authorization. This is crucial for maintaining atomic operations and simplifying security rules. This denormalization avoids the need for `get()` calls in security rules, ensuring that authorization checks are self-contained and efficient.\n\n**QAPs Support (Secure List Operations)**: The segregation of user data into dedicated collections (e.g., `/users/{userId}`) allows for secure list operations. Security rules can be applied to these collections with the assurance that all documents within the collection share the same security requirements. This prevents unauthorized access to sensitive data during list operations.\n\n**Data Clarity and Predictability**: The structure uses explicit state modeling (user roles) and predictable schemas. Naming conventions are consistent (e.g., `userId` for user identifiers)."
+  }
+}

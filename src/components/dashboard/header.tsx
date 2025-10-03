@@ -1,9 +1,8 @@
 
 "use client";
 
-import { DollarSign, FileText, PiggyBank, ReceiptText, Lightbulb } from "lucide-react";
+import { DollarSign, FileText, PiggyBank, ReceiptText, Lightbulb, User } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { ThemeToggle } from "./theme-toggle";
@@ -13,14 +12,20 @@ import { BudgetPlannerModal } from "../modals/budget-planner-modal";
 import { SavingsProjectorModal } from "../modals/savings-projector-modal";
 import { ReportModal } from "../modals/report-modal";
 import { TipsModal } from "../modals/tips-modal";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from "firebase/firestore";
 
 interface HeaderProps {
   balance: number;
 }
 
 export function Header({ balance }: HeaderProps) {
-  const searchParams = useSearchParams();
-  const role = searchParams.get("role") || "normal";
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const userDocRef = useMemoFirebase(() => (user ? doc(firestore, 'users', user.uid) : null), [firestore, user]);
+  const { data: userData } = useDoc(userDocRef);
+  const role = userData?.role || 'normal';
 
   const isStudent = role === 'student';
 

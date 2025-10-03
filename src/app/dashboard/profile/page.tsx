@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -22,7 +23,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useSearchParams } from 'next/navigation';
+import {
+  useUser,
+  useFirestore,
+  useDoc,
+  updateDocumentNonBlocking,
+  useMemoFirebase,
+} from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 const profileSchema = z.object({
   fullName: z.string().min(1, { message: 'Full name is required.' }),
@@ -33,24 +41,47 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export default function ProfilePage() {
   const { toast } = useToast();
-  const searchParams = useSearchParams();
-  const role = searchParams.get('role') || 'normal';
-  const userInitial = role === 'student' ? 'S' : 'U';
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const userDocRef = useMemoFirebase(
+    () => (user ? doc(firestore, 'users', user.uid) : null),
+    [firestore, user]
+  );
+  const { data: userData } = useDoc<{
+    fullName: string;
+    email: string;
+    role: string;
+  }>(userDocRef);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      fullName: 'Demo User',
-      email: 'user@example.com',
+      fullName: '',
+      email: '',
     },
   });
 
+  useEffect(() => {
+    if (userData) {
+      form.reset({
+        fullName: userData.fullName,
+        email: userData.email,
+      });
+    }
+  }, [userData, form]);
+
   const onSubmit = (values: ProfileFormValues) => {
-    toast({
-      title: 'Profile Updated',
-      description: 'Your profile has been updated successfully.',
-    });
+    if (userDocRef) {
+      updateDocumentNonBlocking(userDocRef, values);
+      toast({
+        title: 'Profile Updated',
+        description: 'Your profile has been updated successfully.',
+      });
+    }
   };
+  
+  const userInitial = userData?.role === 'student' ? 'S' : 'U';
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -69,9 +100,9 @@ export default function ProfilePage() {
                 <AvatarFallback>{userInitial}</AvatarFallback>
               </Avatar>
               <div>
-                <h2 className="text-xl font-semibold">Demo User</h2>
+                <h2 className="text-xl font-semibold">{userData?.fullName}</h2>
                 <p className="text-sm text-muted-foreground">
-                  user@example.com
+                  {userData?.email}
                 </p>
               </div>
             </div>
@@ -104,6 +135,7 @@ export default function ProfilePage() {
                           type="email"
                           placeholder="name@example.com"
                           {...field}
+                          readOnly
                         />
                       </FormControl>
                       <FormMessage />

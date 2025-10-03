@@ -32,6 +32,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
+import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from 'firebase/auth';
+import { doc } from 'firebase/firestore';
+import { useToast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -52,6 +59,10 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 
 export function AuthForm() {
   const router = useRouter();
+  const { toast } = useToast();
+  const auth = useAuth();
+  const firestore = useFirestore();
+
   const [password, setPassword] = useState("");
   const [passwordStrength, setPasswordStrength] = useState(0);
 
@@ -75,12 +86,39 @@ export function AuthForm() {
     },
   });
 
-  const handleLogin = (values: LoginFormValues) => {
-    router.push(`/dashboard?role=${values.role}`);
+  const handleLogin = async (values: LoginFormValues) => {
+    try {
+      await signInWithEmailAndPassword(auth, values.email, values.password);
+      router.push(`/dashboard`);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message,
+      });
+    }
   };
 
-  const handleSignup = (values: SignupFormValues) => {
-    router.push(`/dashboard?role=${values.role}`);
+  const handleSignup = async (values: SignupFormValues) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const user = userCredential.user;
+      if (user) {
+        const userDocRef = doc(firestore, 'users', user.uid);
+        await setDocumentNonBlocking(userDocRef, {
+          fullName: values.fullName,
+          email: values.email,
+          role: values.role
+        }, {});
+        router.push(`/dashboard`);
+      }
+    } catch (error: any) {
+       toast({
+        variant: "destructive",
+        title: "Sign Up Failed",
+        description: error.message,
+      });
+    }
   };
 
   const checkPasswordStrength = (pass: string) => {
@@ -137,27 +175,7 @@ export function AuthForm() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={loginForm.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Role</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select your role" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="normal">Normal</SelectItem>
-                          <SelectItem value="student">Student</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Role selection is not needed for login */}
                 <div className="flex items-center justify-between">
                   <FormField
                     control={loginForm.control}
