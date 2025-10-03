@@ -1,3 +1,4 @@
+
 "use client";
 
 import { DollarSign, FileText, PiggyBank, ReceiptText, Lightbulb } from "lucide-react";
@@ -11,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { BudgetPlannerModal } from "../modals/budget-planner-modal";
 import { SavingsProjectorModal } from "../modals/savings-projector-modal";
 import { ReportModal } from "../modals/report-modal";
+import { TipsModal } from "../modals/tips-modal";
 
 interface HeaderProps {
   balance: number;
@@ -56,9 +58,14 @@ export function Header({ balance }: HeaderProps) {
           )}
 
           {isStudent && (
-            <Button variant="ghost">
-              <Lightbulb className="mr-2 h-4 w-4" /> Tips
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost">
+                  <Lightbulb className="mr-2 h-4 w-4" /> Tips
+                </Button>
+              </DialogTrigger>
+              <TipsModal />
+            </Dialog>
           )}
           
           <Dialog>
