@@ -18,6 +18,7 @@ import {
   SavingsProjectionChart,
   InvestmentGrowthChart,
 } from "./charts";
+import { SavingsGoals } from "./savings-goals";
 
 export function NormalUserDashboard({ balance }: { balance: number }) {
   const monthlyExpenses = balance * 0.7; // Example calculation
@@ -32,11 +33,12 @@ export function NormalUserDashboard({ balance }: { balance: number }) {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="expenses" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
             <TabsTrigger value="expenses">Expenses</TabsTrigger>
             <TabsTrigger value="analysis">Analysis</TabsTrigger>
             <TabsTrigger value="trends">Trends</TabsTrigger>
             <TabsTrigger value="projections">Projections</TabsTrigger>
+            <TabsTrigger value="goals">Goals</TabsTrigger>
           </TabsList>
           
           <TabsContent value="expenses" className="mt-4">
@@ -121,6 +123,9 @@ export function NormalUserDashboard({ balance }: { balance: number }) {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+          <TabsContent value="goals" className="mt-4">
+            <SavingsGoals />
           </TabsContent>
         </Tabs>
       </CardContent>

@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { ExpensesVsAllowanceChart, FeePaymentStatusChart } from './charts';
 import { useToast } from '@/hooks/use-toast';
+import { SavingsGoals } from './savings-goals';
 
 export function StudentUserDashboard() {
   const { toast } = useToast();
@@ -139,6 +140,8 @@ export function StudentUserDashboard() {
           </CardContent>
         </Card>
       </div>
+      
+      <SavingsGoals />
 
       <Card>
         <CardHeader>
