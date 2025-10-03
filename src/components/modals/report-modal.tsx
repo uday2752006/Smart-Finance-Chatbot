@@ -13,13 +13,13 @@ import { MonthlyExpenseChart } from "../dashboard/charts";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Separator } from "../ui/separator";
 
-export function ReportModal() {
+export function ReportModal({ balance }: { balance: number }) {
   // Mock data for the report
   const reportData = {
     period: "June 2024",
-    income: 5000,
-    expenses: 3578,
-    savings: 1422,
+    income: 400000,
+    expenses: 286240,
+    savings: 113760,
     insights: [
       "Your spending on 'Food' was 15% higher than last month.",
       "You met your savings goal for this month. Great job!",
@@ -27,14 +27,14 @@ export function ReportModal() {
     ],
   };
 
-  const formatted = (amount: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+  const formatted = (amount: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(amount);
 
   return (
     <DialogContent className="sm:max-w-[725px]">
       <DialogHeader>
         <DialogTitle className="font-headline">Monthly Financial Report</DialogTitle>
         <DialogDescription>
-          A summary of your financial activity for {reportData.period}.
+          A summary of your financial activity for {reportData.period}. Current balance is {formatted(balance)}.
         </DialogDescription>
       </DialogHeader>
       <div className="py-4 space-y-6">

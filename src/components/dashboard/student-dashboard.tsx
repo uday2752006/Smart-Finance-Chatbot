@@ -25,19 +25,19 @@ export function StudentUserDashboard() {
   const summaryData = [
     {
       title: "Monthly Allowance",
-      value: "$1,000",
+      value: "₹8,000",
       change: "+1.2%",
       changeType: "increase",
     },
     {
       title: "Monthly Expenses",
-      value: "$780",
+      value: "₹6,240",
       change: "+5.4%",
       changeType: "increase",
     },
     {
       title: "Monthly Savings",
-      value: "$220",
+      value: "₹1,760",
       change: "-2.1%",
       changeType: "decrease",
     },

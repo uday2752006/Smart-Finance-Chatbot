@@ -19,13 +19,15 @@ import {
   InvestmentGrowthChart,
 } from "./charts";
 
-export function NormalUserDashboard() {
+export function NormalUserDashboard({ balance }: { balance: number }) {
+  const monthlyExpenses = balance * 0.7; // Example calculation
+  
   return (
     <Card>
       <CardHeader>
         <CardTitle className="font-headline">Dashboard</CardTitle>
         <CardDescription>
-          An overview of your financial activity.
+          An overview of your financial activity. Current balance: {new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(balance)}
         </CardDescription>
       </CardHeader>
       <CardContent>

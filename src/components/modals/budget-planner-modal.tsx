@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -33,15 +33,15 @@ const budgetSchema = z.object({
 
 type BudgetFormValues = z.infer<typeof budgetSchema>;
 
-export function BudgetPlannerModal() {
+export function BudgetPlannerModal({ currentBalance }: { currentBalance: number }) {
   const [budgetPlan, setBudgetPlan] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetSchema),
     defaultValues: {
-      monthlyIncome: 5000,
-      monthlyExpenses: 3500,
+      monthlyIncome: 50000,
+      monthlyExpenses: 35000,
     },
   });
 
@@ -58,13 +58,16 @@ export function BudgetPlannerModal() {
       setIsLoading(false);
     }
   };
+  
+  const formattedBalance = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(currentBalance);
+
 
   return (
     <DialogContent className="sm:max-w-[625px]">
       <DialogHeader>
         <DialogTitle className="font-headline">Budget Planner</DialogTitle>
         <DialogDescription>
-          Enter your income and expenses to generate a personalized budget.
+          Enter your income and expenses to generate a personalized budget. Your current balance is {formattedBalance}.
         </DialogDescription>
       </DialogHeader>
       <div className="py-4">
@@ -88,9 +91,9 @@ export function BudgetPlannerModal() {
                 name="monthlyIncome"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Monthly Income ($)</FormLabel>
+                    <FormLabel>Monthly Income (₹)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="e.g., 5000" {...field} />
+                      <Input type="number" placeholder="e.g., 50000" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -101,9 +104,9 @@ export function BudgetPlannerModal() {
                 name="monthlyExpenses"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Total Monthly Expenses ($)</FormLabel>
+                    <FormLabel>Total Monthly Expenses (₹)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="e.g., 3500" {...field} />
+                      <Input type="number" placeholder="e.g., 35000" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

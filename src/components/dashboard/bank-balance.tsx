@@ -13,8 +13,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function BankBalance() {
-  const [balance, setBalance] = useState(12530.75);
+interface BankBalanceProps {
+  balance: number;
+  setBalance: (balance: number) => void;
+}
+
+export function BankBalance({ balance, setBalance }: BankBalanceProps) {
   const [inputValue, setInputValue] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
@@ -27,9 +31,9 @@ export function BankBalance() {
     setInputValue("");
   };
 
-  const formattedBalance = new Intl.NumberFormat("en-US", {
+  const formattedBalance = new Intl.NumberFormat("en-IN", {
     style: "currency",
-    currency: "USD",
+    currency: "INR",
   }).format(balance);
 
   return (

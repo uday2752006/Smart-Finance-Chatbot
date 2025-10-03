@@ -12,7 +12,11 @@ import { BudgetPlannerModal } from "../modals/budget-planner-modal";
 import { SavingsProjectorModal } from "../modals/savings-projector-modal";
 import { ReportModal } from "../modals/report-modal";
 
-export function Header() {
+interface HeaderProps {
+  balance: number;
+}
+
+export function Header({ balance }: HeaderProps) {
   const searchParams = useSearchParams();
   const role = searchParams.get("role") || "normal";
 
@@ -37,7 +41,7 @@ export function Header() {
                 <ReceiptText className="mr-2 h-4 w-4" /> Budget Planner
               </Button>
             </DialogTrigger>
-            <BudgetPlannerModal />
+            <BudgetPlannerModal currentBalance={balance} />
           </Dialog>
 
           {!isStudent && (
@@ -47,7 +51,7 @@ export function Header() {
                   <PiggyBank className="mr-2 h-4 w-4" /> Savings
                 </Button>
               </DialogTrigger>
-              <SavingsProjectorModal />
+              <SavingsProjectorModal currentSavings={balance} />
             </Dialog>
           )}
 
@@ -63,7 +67,7 @@ export function Header() {
                 <FileText className="mr-2 h-4 w-4" /> Report
               </Button>
             </DialogTrigger>
-            <ReportModal />
+            <ReportModal balance={balance} />
           </Dialog>
 
           <ThemeToggle />

@@ -23,12 +23,12 @@ const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE", "#00C49F"
 // For Normal User Dashboard
 export function MonthlyExpenseChart() {
   const data = [
-    { name: "Housing", value: 1200 },
-    { name: "Food", value: 450 },
-    { name: "Transport", value: 250 },
-    { name: "Utilities", value: 180 },
-    { name: "Entertainment", value: 300 },
-    { name: "Other", value: 200 },
+    { name: "Housing", value: 96000 },
+    { name: "Food", value: 36000 },
+    { name: "Transport", value: 20000 },
+    { name: "Utilities", value: 14400 },
+    { name: "Entertainment", value: 24000 },
+    { name: "Other", value: 16000 },
   ];
   return (
     <ResponsiveContainer width="100%" height={300}>
@@ -38,7 +38,7 @@ export function MonthlyExpenseChart() {
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
-        <Tooltip formatter={(value) => `$${value}`} />
+        <Tooltip formatter={(value: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(value)} />
         <Legend />
       </PieChart>
     </ResponsiveContainer>
@@ -47,20 +47,20 @@ export function MonthlyExpenseChart() {
 
 export function SpendingTrendsChart() {
   const data = [
-    { name: "Jan", Spending: 2400 },
-    { name: "Feb", Spending: 2210 },
-    { name: "Mar", Spending: 2290 },
-    { name: "Apr", Spending: 2000 },
-    { name: "May", Spending: 2181 },
-    { name: "Jun", Spending: 2500 },
+    { name: "Jan", Spending: 192000 },
+    { name: "Feb", Spending: 176800 },
+    { name: "Mar", Spending: 183200 },
+    { name: "Apr", Spending: 160000 },
+    { name: "May", Spending: 174480 },
+    { name: "Jun", Spending: 200000 },
   ];
   return (
     <ResponsiveContainer width="100%" height={300}>
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
         <XAxis dataKey="name" stroke="hsl(var(--foreground))" />
-        <YAxis stroke="hsl(var(--foreground))" />
-        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))' }} />
+        <YAxis tickFormatter={(value) => `₹${value/1000}k`} stroke="hsl(var(--foreground))" />
+        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))' }} formatter={(value: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(value)} />
         <Legend />
         <Line type="monotone" dataKey="Spending" stroke="#8884d8" />
       </LineChart>
@@ -70,19 +70,19 @@ export function SpendingTrendsChart() {
 
 export function IncomeVsExpensesChart() {
     const data = [
-        { name: 'Jan', income: 5000, expenses: 3800 },
-        { name: 'Feb', income: 5100, expenses: 4000 },
-        { name: 'Mar', income: 5200, expenses: 3700 },
-        { name: 'Apr', income: 4900, expenses: 3900 },
-        { name: 'May', income: 5300, expenses: 4100 },
+        { name: 'Jan', income: 400000, expenses: 304000 },
+        { name: 'Feb', income: 408000, expenses: 320000 },
+        { name: 'Mar', income: 416000, expenses: 296000 },
+        { name: 'Apr', income: 392000, expenses: 312000 },
+        { name: 'May', income: 424000, expenses: 328000 },
     ];
     return (
         <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="name" stroke="hsl(var(--foreground))" />
-                <YAxis stroke="hsl(var(--foreground))" />
-                <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))' }} />
+                <YAxis tickFormatter={(value) => `₹${value/1000}k`} stroke="hsl(var(--foreground))" />
+                <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))' }} formatter={(value: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(value)} />
                 <Legend />
                 <Bar dataKey="income" fill="#82ca9d" />
                 <Bar dataKey="expenses" fill="#ff8042" />
@@ -93,11 +93,11 @@ export function IncomeVsExpensesChart() {
 
 export function SavingsProgressChart() {
   const data = [
-    { name: 'Jan', savings: 1200 },
-    { name: 'Feb', savings: 1100 },
-    { name: 'Mar', savings: 1500 },
-    { name: 'Apr', savings: 1000 },
-    { name: 'May', savings: 1200 },
+    { name: 'Jan', savings: 96000 },
+    { name: 'Feb', savings: 88000 },
+    { name: 'Mar', savings: 120000 },
+    { name: 'Apr', savings: 80000 },
+    { name: 'May', savings: 96000 },
   ];
     return (
       <ResponsiveContainer width="100%" height={300}>
@@ -110,8 +110,8 @@ export function SavingsProgressChart() {
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="name" stroke="hsl(var(--foreground))" />
-              <YAxis stroke="hsl(var(--foreground))" />
-              <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))' }} />
+              <YAxis tickFormatter={(value) => `₹${value/1000}k`} stroke="hsl(var(--foreground))" />
+              <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))' }} formatter={(value: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(value)} />
               <Legend />
               <Area type="monotone" dataKey="savings" stroke="#82ca9d" fill="url(#colorSavings)" />
           </AreaChart>
@@ -131,18 +131,18 @@ export function InvestmentGrowthChart() { return <SpendingTrendsChart />; }
 // For Student User Dashboard
 export function ExpensesVsAllowanceChart() {
   const data = [
-    { name: 'Week 1', allowance: 250, expenses: 180 },
-    { name: 'Week 2', allowance: 250, expenses: 220 },
-    { name: 'Week 3', allowance: 250, expenses: 190 },
-    { name: 'Week 4', allowance: 250, expenses: 240 },
+    { name: 'Week 1', allowance: 2000, expenses: 1440 },
+    { name: 'Week 2', allowance: 2000, expenses: 1760 },
+    { name: 'Week 3', allowance: 2000, expenses: 1520 },
+    { name: 'Week 4', allowance: 2000, expenses: 1920 },
   ];
   return (
       <ResponsiveContainer width="100%" height={300}>
           <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="name" stroke="hsl(var(--foreground))" />
-              <YAxis stroke="hsl(var(--foreground))" />
-              <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))' }} />
+              <YAxis tickFormatter={(value) => `₹${value/1000}k`} stroke="hsl(var(--foreground))" />
+              <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))' }} formatter={(value: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(value)} />
               <Legend />
               <Bar dataKey="allowance" fill="#8884d8" name="Weekly Allowance" />
               <Bar dataKey="expenses" fill="#82ca9d" name="Weekly Expenses" />
@@ -189,4 +189,3 @@ export function FeePaymentStatusChart() {
         </ResponsiveContainer>
     );
 }
-
