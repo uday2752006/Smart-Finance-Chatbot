@@ -36,9 +36,13 @@ import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  getAdditionalUserInfo
 } from 'firebase/auth';
 import { doc } from 'firebase/firestore';
 import { useToast } from "@/hooks/use-toast";
+import { Separator } from "../ui/separator";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -109,13 +113,39 @@ export function AuthForm() {
           fullName: values.fullName,
           email: values.email,
           role: values.role
-        }, {});
+        }, { merge: true });
         router.push(`/dashboard`);
       }
     } catch (error: any) {
        toast({
         variant: "destructive",
         title: "Sign Up Failed",
+        description: error.message,
+      });
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const additionalInfo = getAdditionalUserInfo(result);
+
+      if (additionalInfo?.isNewUser) {
+        // If it's a new user, create a document in Firestore
+        const userDocRef = doc(firestore, 'users', user.uid);
+        await setDocumentNonBlocking(userDocRef, {
+          fullName: user.displayName,
+          email: user.email,
+          role: 'normal' // Default role for Google sign-in
+        }, { merge: true });
+      }
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Google Sign-In Failed",
         description: error.message,
       });
     }
@@ -131,6 +161,13 @@ export function AuthForm() {
     setPasswordStrength(Math.min(100, strength));
     setPassword(pass);
   };
+  
+  const GoogleSignInButton = () => (
+    <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
+      <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 23.4 172.9 61.9l-76.2 64.5C308.6 106.5 280.4 96 248 96c-88.8 0-160.1 71.1-160.1 160.1s71.3 160.1 160.1 160.1c94.4 0 135.3-73.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 26.9 3.9 41.4z"></path></svg>
+      Sign in with Google
+    </Button>
+  );
 
   return (
     <Card className="w-full">
@@ -146,7 +183,7 @@ export function AuthForm() {
               Enter your credentials to access your dashboard.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <Form {...loginForm}>
               <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
                 <FormField
@@ -175,7 +212,6 @@ export function AuthForm() {
                     </FormItem>
                   )}
                 />
-                {/* Role selection is not needed for login */}
                 <div className="flex items-center justify-between">
                   <FormField
                     control={loginForm.control}
@@ -201,6 +237,17 @@ export function AuthForm() {
                 </Button>
               </form>
             </Form>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+            <GoogleSignInButton />
           </CardContent>
         </TabsContent>
         <TabsContent value="signup">
@@ -210,7 +257,7 @@ export function AuthForm() {
               Fill in the details below to create a new account.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <Form {...signupForm}>
               <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-4">
                 <FormField
@@ -287,6 +334,17 @@ export function AuthForm() {
                 </Button>
               </form>
             </Form>
+             <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+            <GoogleSignInButton />
           </CardContent>
         </TabsContent>
       </Tabs>
