@@ -2,7 +2,8 @@
 
 FinWise is a modern, AI-powered personal finance dashboard designed to provide users with a clear and insightful overview of their financial activities. With tailored interfaces for both normal users and students, FinWise offers a range of tools to help manage budgets, track savings, and achieve financial goals.
 
-![FinWise Dashboard Screenshot](https://i.imgur.com/your-screenshot.png) <!-- Replace with an actual screenshot URL -->
+<img width="815" height="724" alt="image" src="https://github.com/user-attachments/assets/228ced68-3b83-4dd6-b6a4-84ebbaf7b094" />
+
 
 ## ✨ Key Features
 
@@ -92,3 +93,21 @@ Open [http://localhost:9002](http://localhost:9002) in your browser to see the a
 
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## SCREENSHOTS 
+1. Login / Sign Up page
+<img width="815" height="724" alt="image" src="https://github.com/user-attachments/assets/fe5383b8-a586-4758-869f-8432dc9ddbdf" />
+2. Normal User Interface 
+<img width="1137" height="861" alt="image" src="https://github.com/user-attachments/assets/f7805f24-ea43-415e-9369-30bd1c4e8d85" />
+<img width="1123" height="500" alt="image" src="https://github.com/user-attachments/assets/64d92321-acdb-4d2f-8562-f57d0df48bfa" />
+3. Student User Interface
+<img width="1205" height="817" alt="image" src="https://github.com/user-attachments/assets/8b4b9972-f9aa-4aad-b528-b76e83f0c6c0" />
+<img width="1203" height="861" alt="image" src="https://github.com/user-attachments/assets/16f2e3a5-b25f-4a1a-b9ce-b2818f3723d0" />
+<img width="1189" height="391" alt="image" src="https://github.com/user-attachments/assets/722d4aed-b577-47c1-92c8-a42871a18b1d" />
+
+
+
+3.Student User Interface
+
+
+
