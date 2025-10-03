@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Bot, Loader, Send, Mic, User, HelpCircle, Save, Lightbulb, LineChart, Volume2, Play } from "lucide-react";
+import { Bot, Loader, Send, Mic, User, HelpCircle, Lightbulb, LineChart, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -61,8 +61,11 @@ export function Chatbot({ role }: ChatbotProps) {
   const [activeTab, setActiveTab] = useState("general");
   const [isLoading, setIsLoading] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState<number | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+
   const audioRef = useRef<HTMLAudioElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -72,6 +75,32 @@ export function Chatbot({ role }: ChatbotProps) {
       });
     }
   }, [messages, activeTab]);
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        handleSendMessage(transcript);
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        setIsRecording(false);
+      };
+      
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+
+      recognitionRef.current = recognition;
+    }
+  }, []);
 
   const handleSendMessage = async (messageText?: string) => {
     const text = messageText || input;
@@ -152,6 +181,18 @@ export function Chatbot({ role }: ChatbotProps) {
     }
   }
 
+  const handleMicClick = () => {
+    if (!recognitionRef.current) return;
+
+    if (isRecording) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    } else {
+      recognitionRef.current.start();
+      setIsRecording(true);
+    }
+  };
+
   const quickSuggestions = [
     { text: "Create a Budget Plan", icon: HelpCircle },
     { text: "Give me some Savings Tips", icon: Lightbulb },
@@ -230,18 +271,18 @@ export function Chatbot({ role }: ChatbotProps) {
                     )}
                 </div>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="flex-shrink-0">
+                <Button variant={isRecording ? "destructive" : "ghost"} size="icon" className="flex-shrink-0" onClick={handleMicClick} disabled={!recognitionRef.current}>
                   <Mic className="h-5 w-5" />
                   <span className="sr-only">Use voice</span>
                 </Button>
                 <Input
-                  placeholder="Type your message..."
+                  placeholder={isRecording ? "Listening..." : "Type your message..."}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                  disabled={isLoading}
+                  disabled={isLoading || isRecording}
                 />
-                <Button onClick={() => handleSendMessage()} disabled={isLoading}>
+                <Button onClick={() => handleSendMessage()} disabled={isLoading || isRecording}>
                   <Send className="h-5 w-5" />
                   <span className="sr-only">Send</span>
                 </Button>
