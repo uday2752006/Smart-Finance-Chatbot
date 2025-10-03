@@ -16,7 +16,7 @@ import {
   Sandwich,
   Users,
   Utensils,
-  Tram,
+  TramFront,
   GraduationCap
 } from "lucide-react";
 import { ExpensesVsAllowanceChart, FeePaymentStatusChart } from "./charts";
@@ -52,7 +52,7 @@ export function StudentUserDashboard() {
 
   const financialTips = [
     { title: "Food Savings", content: "Cook your own meals instead of eating out.", icon: Utensils, hint: "cooking home" },
-    { title: "Transport", content: "Use public transport or walk/cycle for short distances.", icon: Tram, hint: "public transport" },
+    { title: "Transport", content: "Use public transport or walk/cycle for short distances.", icon: TramFront, hint: "public transport" },
     { title: "Textbooks", content: "Buy second-hand textbooks or use library resources.", icon: BookOpen, hint: "used books" },
     { title: "Savings", content: "Set a weekly savings goal, no matter how small.", icon: Sandwich, hint: "piggy bank" },
   ];
