@@ -16,6 +16,8 @@ import {
   Cell,
   RadialBarChart,
   RadialBar,
+  AreaChart,
+  Area,
 } from "recharts";
 
 const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE", "#00C49F"];
@@ -118,9 +120,6 @@ export function SavingsProgressChart() {
       </ResponsiveContainer>
     );
 }
-// Dummy AreaChart component for SavingsProgressChart
-const AreaChart = (props: any) => <LineChart {...props} />;
-const Area = (props: any) => <Line {...props} />;
 
 export function SixMonthTrendChart() { return <SpendingTrendsChart />; }
 export function CategoryTrendsChart() { return <IncomeVsExpensesChart />; }
